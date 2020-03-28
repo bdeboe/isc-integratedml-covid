@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Class name="COVID.Utils">
+<TimeCreated>65466,51726.272504</TimeCreated>
+
+<Method name="LoadData">
+<Description>
+Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pDir:%String="C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\"</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set tSC = $$$OK
+	try {
+		set tSeparator = $s($$$isWINDOWS:"\", 1:"/")
+		set:$e(pDir,*)'=tSeparator pDir = pDir_tSeparator
+		
+		set tStatement = ##class(%SQL.Statement).%New()
+		set tFile = ##class(%Stream.FileCharacter).%New()
+		for tGroup = "confirmed", "deaths", "recovered" {
+			set tSC = tFile.LinkToFile(pDir_"time_series_covid19_"_tGroup_"_global.csv")
+			quit:$$$ISERR(tSC)
+			
+			set tSC = tStatement.%Prepare("INSERT OR UPDATE INTO COVID.DailyData (Country, State, DailyDate, "_tGroup_") VALUES (?, ?, TO_DATE(?||'20','MM/DD/YYYY'), ?)")
+			quit:$$$ISERR(tSC)
+			
+			set tHeader = tFile.ReadLine(), tColCount = $l(tHeader,",")
+			
+			while 'tFile.AtEnd {
+				set tLine = tFile.ReadLine(), tPos=0
+				set tPos=tPos+1, tState = $piece(tLine,",",tPos)
+				set tPos=tPos+1, tCountry = $piece(tLine,",",tPos)
+				if $e(tCountry)="""" {
+					while $e(tCountry,*)'="""" {
+						set tPos=tPos+1, tCountry = tCountry_","_$piece(tLine,",",tPos)
+					}
+				}
+				set tPos=tPos+1, tLat = $piece(tLine,",",tPos)
+				set tPos=tPos+1, tLong = $piece(tLine,",",tPos)
+				
+				set:tState="" tState = "Combined"
+				
+				for i = 1:1:tColCount {
+					set tDate = $piece(tHeader,",",i+4)
+					set tNumber = $piece(tLine,",",i+tPos)
+					do tStatement.%Execute(tCountry, tState, tDate, tNumber)
+				}
+			}
+		}
+		
+		
+	} catch (ex) {
+		set tSC = ex.AsStatus()
+	}
+	quit tSC
+]]></Implementation>
+</Method>
+</Class>
+</Export>

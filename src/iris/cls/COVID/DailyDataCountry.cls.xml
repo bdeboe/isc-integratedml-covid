@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Class name="COVID.DailyDataCountry">
+<ClassType>view</ClassType>
+<CompileAfter>COVID.DailyData</CompileAfter>
+<DdlAllowed>1</DdlAllowed>
+<Owner>UnknownUser</Owner>
+<ProcedureBlock>0</ProcedureBlock>
+<SqlTableName>DailyDataCountry</SqlTableName>
+<TimeCreated>65466,52445.022293</TimeCreated>
+<ViewQuery> SELECT %EXACT(Country) As Country, DailyDate, SUM(Confirmed) AS Confirmed, SUM(Deaths) AS Deaths, SUM(Recovered) AS Recovered FROM COVID.DailyData GROUP BY %EXACT(Country), DailyDate</ViewQuery>
+</Class>
+</Export>

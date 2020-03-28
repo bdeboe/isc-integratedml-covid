@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="IRIS" version="26">
+<Class name="COVID.DailyData">
+<Super>%Persistent</Super>
+<TimeCreated>65466,50953.591638</TimeCreated>
+
+<Parameter name="USEEXTENTSET">
+<Default>1</Default>
+</Parameter>
+
+<Property name="Country">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="200"/>
+</Property>
+
+<Property name="State">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Property name="DailyDate">
+<Type>%Date</Type>
+</Property>
+
+<Property name="Confirmed">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Deaths">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Recovered">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Index name="CountryDate">
+<PrimaryKey>1</PrimaryKey>
+<Properties>Country,State,DailyDate</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Storage name="Default">
+<Type>%Storage.Persistent</Type>
+<DataLocation>^COVID.DailyDataD</DataLocation>
+<DefaultData>DailyDataDefaultData</DefaultData>
+<IdLocation>^COVID.DailyDataD</IdLocation>
+<IndexLocation>^COVID.DailyDataI</IndexLocation>
+<StreamLocation>^COVID.DailyDataS</StreamLocation>
+<ExtentLocation>^csQK.DWSq</ExtentLocation>
+<Data name="DailyDataDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Country</Value>
+</Value>
+<Value name="3">
+<Value>DailyDate</Value>
+</Value>
+<Value name="4">
+<Value>Confirmed</Value>
+</Value>
+<Value name="5">
+<Value>Deaths</Value>
+</Value>
+<Value name="6">
+<Value>Recovered</Value>
+</Value>
+<Value name="7">
+<Value>State</Value>
+</Value>
+</Data>
+<Index name="CountryDate">
+<Location>^csQK.DWSq.2</Location>
+</Index>
+<Index name="IDKEY">
+<Location>^csQK.DWSq.1</Location>
+</Index>
+</Storage>
+</Class>
+</Export>
