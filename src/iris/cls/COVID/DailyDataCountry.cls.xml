@@ -1,13 +1,96 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="IRIS" version="26">
 <Class name="COVID.DailyDataCountry">
-<ClassType>view</ClassType>
-<CompileAfter>COVID.DailyData</CompileAfter>
-<DdlAllowed>1</DdlAllowed>
-<Owner>UnknownUser</Owner>
-<ProcedureBlock>0</ProcedureBlock>
-<SqlTableName>DailyDataCountry</SqlTableName>
-<TimeCreated>65466,52445.022293</TimeCreated>
-<ViewQuery> SELECT %EXACT(Country) As Country, DailyDate, SUM(Confirmed) AS Confirmed, SUM(Deaths) AS Deaths, SUM(Recovered) AS Recovered FROM COVID.DailyData GROUP BY %EXACT(Country), DailyDate</ViewQuery>
+<Super>%Persistent</Super>
+<TimeCreated>65466,58089.809837</TimeCreated>
+
+<Parameter name="USEEXTENTSET">
+<Default>1</Default>
+</Parameter>
+
+<Property name="Country">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="200"/>
+</Property>
+
+<Property name="DailyDate">
+<Type>%Date</Type>
+</Property>
+
+<Property name="Confirmed">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Deaths">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Property name="Recovered">
+<Type>%Integer</Type>
+<InitialExpression>0</InitialExpression>
+</Property>
+
+<Index name="CountryDate">
+<PrimaryKey>1</PrimaryKey>
+<Properties>Country,DailyDate</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Index name="Country">
+<Type>bitmap</Type>
+<Properties>Country</Properties>
+</Index>
+
+<Index name="DailyDate">
+<Type>bitmap</Type>
+<Properties>DailyDate</Properties>
+</Index>
+
+<Storage name="Default">
+<Type>%Storage.Persistent</Type>
+<DataLocation>^csQK.BOOU.1</DataLocation>
+<DefaultData>DailyDataCountryDefaultData</DefaultData>
+<IdLocation>^csQK.BOOU.1</IdLocation>
+<IndexLocation>^csQK.BOOU.I</IndexLocation>
+<StreamLocation>^csQK.BOOU.S</StreamLocation>
+<ExtentLocation>^csQK.BOOU</ExtentLocation>
+<Data name="DailyDataCountryDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Country</Value>
+</Value>
+<Value name="3">
+<Value>DailyDate</Value>
+</Value>
+<Value name="4">
+<Value>Confirmed</Value>
+</Value>
+<Value name="5">
+<Value>Deaths</Value>
+</Value>
+<Value name="6">
+<Value>Recovered</Value>
+</Value>
+</Data>
+<Index name="$DailyDataCountry">
+<Location>^csQK.BOOU.2</Location>
+</Index>
+<Index name="Country">
+<Location>^csQK.BOOU.3</Location>
+</Index>
+<Index name="CountryDate">
+<Location>^csQK.BOOU.4</Location>
+</Index>
+<Index name="DailyDate">
+<Location>^csQK.BOOU.5</Location>
+</Index>
+<Index name="IDKEY">
+<Location>^csQK.BOOU.1</Location>
+</Index>
+</Storage>
 </Class>
 </Export>

@@ -34,6 +34,7 @@ Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
 					while $e(tCountry,*)'="""" {
 						set tPos=tPos+1, tCountry = tCountry_","_$piece(tLine,",",tPos)
 					}
+					set tCountry = $e(tCountry,2,*-1)
 				}
 				set tPos=tPos+1, tLat = $piece(tLine,",",tPos)
 				set tPos=tPos+1, tLong = $piece(tLine,",",tPos)
@@ -48,11 +49,38 @@ Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
 			}
 		}
 		
+		// now update aggregate table
+		do ##class(%SQL.Statement).%ExecDirect(,"TRUNCATE TABLE COVID.DailyDataCountry")
+		do ##class(%SQL.Statement).%ExecDirect(,"INSERT INTO COVID.DailyDataCountry (Country, DailyDate, Confirmed, Deaths, REcovered) SELECT %EXACT(Country) As Country, DailyDate, SUM(Confirmed) AS Confirmed, SUM(Deaths) AS Deaths, SUM(Recovered) AS Recovered FROM COVID.DailyData GROUP BY %EXACT(Country), DailyDate")
+		
+		// and populate the countries table (should be static, but cheap!)
+		do ##class(COVID.Countries).Load()
 		
 	} catch (ex) {
 		set tSC = ex.AsStatus()
 	}
 	quit tSC
+]]></Implementation>
+</Method>
+
+<Method name="BuildSQL">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pDays:%Integer=1,pIncludeDates:%Boolean=1</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set tNL = $c(13,10)
+	set tSELECT = "SELECT c.Country, c.Population, c.PopulationDensity, "_tNL
+	set:pIncludeDates tSELECT = tSELECT_" d.DailyDate,"
+	set tSELECT = tSELECT_" d.Confirmed, d.Deaths, d.Recovered"
+	set tFROM = "FROM COVID.DailyDataCountry d JOIN COVID.Countries c ON d.Country = c.Country"
+	for i = 1:1:pDays {
+		set tSELECT = tSELECT_", "_tNL
+		set:pIncludeDates tSELECT = tSELECT_" d"_i_".DailyDate AS D"_i_"_DailyDate, "
+		set tSELECT = tSELECT_" d"_i_".Confirmed AS D"_i_"_Confirmed, d"_i_".Deaths AS D"_i_"_Deaths, d"_i_".Recovered AS D"_i_"_Recovered "
+		set tFROM = tFROM_tNL_" JOIN COVID.DailyDataCountry d"_i_" ON d.Country = d"_i_".Country AND d.DailyDate = DATEADD('day',"_i_",d"_i_".DailyDate) "
+	}
+	
+	quit tSELECT_tNL_tFROM
 ]]></Implementation>
 </Method>
 </Class>

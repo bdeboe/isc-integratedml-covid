@@ -20,4 +20,20 @@ This repository contains a few helper classes to support experimenting with the 
 
     This will amend any data already loaded, so to pick up an updated source file, just re-run the `LoadData()` method.
 
-3. ...
+3. Now you can start exploring the dataset and build models based on the available tables:
+    - `COVID.DailyData` is the base table populated based on the CSSE dataset, having state-level details for some countries
+    - `COVID.DailyDataCountry` aggregates that data by country
+    - `COVID.Countries` has country-level population data
+
+    Some (supposedly) useful queries gathering data for consecutive days as additional columns can be produced by the `BuildSQL()` utility method in `COVID.Utils`:
+
+    ```SQL
+    SELECT c.Country, c.Population, c.PopulationDensity,
+        d.DailyDate, d.Confirmed, d.Deaths, d.Recovered,
+        d1.DailyDate AS D1_DailyDate,  d1.Confirmed AS D1_Confirmed, d1.Deaths AS D1_Deaths, d1.Recovered AS D1_Recovered ,
+        d2.DailyDate AS D2_DailyDate,  d2.Confirmed AS D2_Confirmed, d2.Deaths AS D2_Deaths, d2.Recovered AS D2_Recovered
+    FROM COVID.DailyDataCountry d 
+        JOIN COVID.Countries c ON d.Country = c.Country
+        JOIN COVID.DailyDataCountry d1 ON d.Country = d1.Country AND d.DailyDate = DATEADD('day',1,d1.DailyDate)
+        JOIN COVID.DailyDataCountry d2 ON d.Country = d2.Country AND d.DailyDate = DATEADD('day',2,d2.DailyDate)
+    ```
