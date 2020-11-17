@@ -1,30 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Export generator="IRIS" version="26">
-<Class name="COVID.Countries">
-<Description>
-Data sourced from https://population.un.org/wpp/Download/Standard/CSV/
-Scrubbing some groupings and appropriating some countries' spelling to align with COVID data</Description>
-<Language>objectscript</Language>
-<Super>%Persistent</Super>
-<TimeCreated>65466,56286.835186</TimeCreated>
+/// Data sourced from https://population.un.org/wpp/Download/Standard/CSV/
+/// Scrubbing some groupings and appropriating some countries' spelling to align with COVID data
+Class COVID.Countries Extends %Persistent [ Language = objectscript ]
+{
 
-<Property name="Country">
-<Type>%String</Type>
-<Parameter name="MAXLEN" value="500"/>
-</Property>
+Property Country As %String(MAXLEN = 500);
 
-<Property name="Population">
-<Type>%Decimal</Type>
-</Property>
+Property Population As %Decimal;
 
-<Property name="PopulationDensity">
-<Type>%Decimal</Type>
-</Property>
+Property PopulationDensity As %Decimal;
 
-<Method name="Load">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+ClassMethod Load() As %Status
+{
 	set tSC = ..%KillExtent()
 	set tXData = ##class(%Dictionary.XDataDefinition).%OpenId($classname()_"||data")
 	do tXData.Data.ReadLine() // skip wrapper
@@ -41,11 +27,10 @@ Scrubbing some groupings and appropriating some countries' spelling to align wit
 		quit:$$$ISERR(tSC)
 	}
 	quit tSC
-]]></Implementation>
-</Method>
+}
 
-<XData name="data">
-<Data><![CDATA[
+XData data
+{
 <data>
 Location	PopTotal	PopDensity
 Afghanistan	38928341	59.627
@@ -310,16 +295,10 @@ Yemen	29825968	56.492
 Zambia	18383956	24.73
 Zimbabwe	14862927	38.42
 </data>
-]]></Data>
-</XData>
+}
 
-<Storage name="Default">
-<Type>%Storage.Persistent</Type>
-<DataLocation>^COVID.CountriesD</DataLocation>
-<DefaultData>CountriesDefaultData</DefaultData>
-<IdLocation>^COVID.CountriesD</IdLocation>
-<IndexLocation>^COVID.CountriesI</IndexLocation>
-<StreamLocation>^COVID.CountriesS</StreamLocation>
+Storage Default
+{
 <Data name="CountriesDefaultData">
 <Value name="1">
 <Value>%%CLASSNAME</Value>
@@ -334,6 +313,12 @@ Zimbabwe	14862927	38.42
 <Value>PopulationDensity</Value>
 </Value>
 </Data>
-</Storage>
-</Class>
-</Export>
+<DataLocation>^COVID.CountriesD</DataLocation>
+<DefaultData>CountriesDefaultData</DefaultData>
+<IdLocation>^COVID.CountriesD</IdLocation>
+<IndexLocation>^COVID.CountriesI</IndexLocation>
+<StreamLocation>^COVID.CountriesS</StreamLocation>
+<Type>%Storage.Persistent</Type>
+}
+
+}

@@ -1,15 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Export generator="IRIS" version="26">
-<Class name="COVID.Utils">
-<TimeCreated>65466,51726.272504</TimeCreated>
+Class COVID.Utils
+{
 
-<Method name="LoadData">
-<Description>
-Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pDir:%String="C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\"</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
+/// Based on CSSE data from https://github.com/CSSEGISandData/COVID-19
+ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\") As %Status
+{
 	set tSC = $$$OK
 	try {
 		set tSeparator = $s($$$isWINDOWS:"\", 1:"/")
@@ -60,14 +54,10 @@ Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
 		set tSC = ex.AsStatus()
 	}
 	quit tSC
-]]></Implementation>
-</Method>
+}
 
-<Method name="BuildSQL">
-<ClassMethod>1</ClassMethod>
-<FormalSpec>pDays:%Integer=1,pIncludeDates:%Boolean=1</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[
+ClassMethod BuildSQL(pDays As %Integer = 1, pIncludeDates As %Boolean = 1) As %String
+{
 	set tNL = $c(13,10)
 	set tSELECT = "SELECT c.Country, c.Population, c.PopulationDensity, "_tNL
 	set:pIncludeDates tSELECT = tSELECT_" d.DailyDate,"
@@ -81,7 +71,6 @@ Based on CSSE data from https://github.com/CSSEGISandData/COVID-19</Description>
 	}
 	
 	quit tSELECT_tNL_tFROM
-]]></Implementation>
-</Method>
-</Class>
-</Export>
+}
+
+}
