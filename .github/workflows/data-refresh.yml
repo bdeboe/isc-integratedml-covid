@@ -20,7 +20,7 @@ jobs:
         id: download-from-csse
         uses: actions/checkout@v2 
         with:
-          repository: https://github.com/CSSEGISandData/COVID-19.git
+          repository: CSSEGISandData/COVID-19
           path: data 
 
       - name: Start ZPM-enabled Container
