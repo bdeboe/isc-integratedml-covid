@@ -2,7 +2,7 @@ Class COVID.Utils
 {
 
 /// Based on CSSE data from https://github.com/CSSEGISandData/COVID-19
-ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\") As %Status
+ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\", pVerbose As %Boolean = 1) As %Status
 {
 	set tSC = $$$OK
 	try {
@@ -12,11 +12,14 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 		set tStatement = ##class(%SQL.Statement).%New()
 		set tFile = ##class(%Stream.FileCharacter).%New()
 		for tGroup = "confirmed", "deaths", "recovered" {
+
+			set tSC = tStatement.%Prepare("INSERT OR UPDATE INTO COVID.DailyData (Country, State, Locality, DailyDate, "_tGroup_") VALUES (?, ?, ?, TO_DATE(?||'20','MM/DD/YYYY'), ?)")
+			quit:$$$ISERR(tSC)
+
+			// process global file first
 			set tSC = tFile.LinkToFile(pDir_"time_series_covid19_"_tGroup_"_global.csv")
 			quit:$$$ISERR(tSC)
-			
-			set tSC = tStatement.%Prepare("INSERT OR UPDATE INTO COVID.DailyData (Country, State, DailyDate, "_tGroup_") VALUES (?, ?, TO_DATE(?||'20','MM/DD/YYYY'), ?)")
-			quit:$$$ISERR(tSC)
+			write:pVerbose !,"Processing file: '"_tFile.Filename
 			
 			set tHeader = tFile.ReadLine(), tColCount = $l(tHeader,",")
 			
@@ -33,22 +36,49 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 				set tPos=tPos+1, tLat = $piece(tLine,",",tPos)
 				set tPos=tPos+1, tLong = $piece(tLine,",",tPos)
 				
-				set:tState="" tState = "Combined"
+				set:tState="" tState = ""
 				
 				for i = 1:1:tColCount {
 					set tDate = $piece(tHeader,",",i+4)
+					quit:tDate=""
 					set tNumber = $piece(tLine,",",i+tPos)
-					do tStatement.%Execute(tCountry, tState, tDate, tNumber)
+					do tStatement.%Execute(tCountry, tState, "", tDate, tNumber)
 				}
+			}
+
+			// process US file format
+			continue:tGroup="recovered"
+			set tSC = tFile.LinkToFile(pDir_"time_series_covid19_"_tGroup_"_US.csv")
+			quit:$$$ISERR(tSC)
+			write:pVerbose !,"Processing file: '"_tFile.Filename
+
+			set tHeader = tFile.ReadLine(), tColCount = $l(tHeader,",")
+			
+			while 'tFile.AtEnd {
+				set tLine = tFile.ReadLine()
+				set tState = $piece(tLine,",",7)
+				set tLocality = $piece(tLine,",",6)
+
+				set tActualData = $piece(tLine,"""",3)
+				for i = 1:1:tColCount {
+					set tDate = $piece(tHeader,",",i+11)
+					quit:tDate=""
+					set tNumber = $piece(tActualData,",",i)
+					do tStatement.%Execute("United States", tState, tLocality, tDate, tNumber)
+				}
+
 			}
 		}
 		
 		// now update aggregate table
+		write:pVerbose !,"Updating aggregate numbers per country"
 		do ##class(%SQL.Statement).%ExecDirect(,"TRUNCATE TABLE COVID.DailyDataCountry")
 		do ##class(%SQL.Statement).%ExecDirect(,"INSERT INTO COVID.DailyDataCountry (Country, DailyDate, Confirmed, Deaths, REcovered) SELECT %EXACT(Country) As Country, DailyDate, SUM(Confirmed) AS Confirmed, SUM(Deaths) AS Deaths, SUM(Recovered) AS Recovered FROM COVID.DailyData GROUP BY %EXACT(Country), DailyDate")
 		
 		// and populate the countries table (should be static, but cheap!)
+		write:pVerbose !,"Updating country info"
 		do ##class(COVID.Countries).Load()
+		write:pVerbose !
 		
 	} catch (ex) {
 		set tSC = ex.AsStatus()

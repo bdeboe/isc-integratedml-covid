@@ -7,6 +7,8 @@ Property Country As %String(MAXLEN = 200);
 
 Property State As %String(MAXLEN = 500);
 
+Property Locality As %String(MAXLEN = 500);
+
 Property DailyDate As %Date;
 
 Property Confirmed As %Integer [ InitialExpression = 0 ];
@@ -15,7 +17,7 @@ Property Deaths As %Integer [ InitialExpression = 0 ];
 
 Property Recovered As %Integer [ InitialExpression = 0 ];
 
-Index CountryDate On (Country, State, DailyDate) [ PrimaryKey, Unique ];
+Index CountryDate On (Country, State, Locality, DailyDate) [ PrimaryKey, Unique ];
 
 Storage Default
 {
@@ -40,6 +42,9 @@ Storage Default
 </Value>
 <Value name="7">
 <Value>State</Value>
+</Value>
+<Value name="8">
+<Value>Locality</Value>
 </Value>
 </Data>
 <DataLocation>^COVID.DailyDataD</DataLocation>
