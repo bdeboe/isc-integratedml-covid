@@ -1,0 +1,50 @@
+name: refresh from CSSE
+
+on: [ workflow_dispatch ]
+
+jobs:
+  # This workflow contains a single job called "build"
+  load:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    env:
+      #package: Samples-Aviation
+      container_image: intersystemsdc/iris-community:2020.4.0.524.0-zpm
+      instance: iris
+
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Load CSSE data
+        id: download-from-csse
+        uses: actions/checkout@v2 
+        with:
+          repository: https://github.com/CSSEGISandData/COVID-19.git
+          path: data 
+
+      - name: Start ZPM-enabled Container
+        id: container-start
+        run: |
+          # Run InterSystems IRIS instance
+          docker pull $container_image
+          docker run -d --name $instance -v $GITHUB_WORKSPACE:/source $container_image
+          echo halt > wait
+          # build test script
+          # docker exec $instance bash -c "printf 'zpm\nload /source\nquit\nhalt\n' > test-zpm.script"
+          # docker exec my-iris bash -c "iris session iris < test-zpm3.script"
+          # Wait for instance to be ready
+          until docker exec $instance iris session $instance < wait; do sleep 1; done
+          
+      - name: Test ZPM installation
+        id: zpm-test
+        run: |
+          echo "zpm \"load /source\":1:1" > load-zpm
+          docker exec --interactive $instance iris session $instance -B < load-zpm
+          
+      - name: Load CSSE data
+        id: load-data
+        run: |
+          echo "do ##class(COVID.Utils).LoadData("/source/data/csse_covid_19_data/csse_covid_19_time_series/")" > load-data
+          docker exec --interactive $instance iris session $instance -B < load-data
+          
