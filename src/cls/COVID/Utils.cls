@@ -1,6 +1,61 @@
 Class COVID.Utils
 {
 
+ClassMethod Download(pTempDir As %String = "/tmp/covid19/", pLoad As %Boolean = 1, pVerbose As %Boolean = 1) As %Status
+{
+	set tSC = $$$OK
+	try {
+		
+		w:pVerbose !,"Downloading CSSE data from https://github.com/CSSEGISandData/COVID-19"
+				
+		set tSeparator = $s($$$isWINDOWS:"\",1:"/")
+		if pTempDir="" {
+			set pTempDir = $s($$$isWINDOWS:"C:\tmp\covid19\", 1:"/tmp/covid19/")
+		} elseif $e(pTempDir,*)'=tSeparator {
+			set pTempDir = pTempDir_tSeparator
+		}
+		do ##class(%File).CreateDirectoryChain(pTempDir)
+		
+		set tFilePtr = ##class(%Stream.FileBinary).%New()
+		for tFilename = "confirmed_global", "confirmed_US", "deaths_global", "deaths_US", "recovered_global" {
+			
+			set tHttpRequest = ##class(%Net.HttpRequest).%New()
+			set tHttpRequest.Server = "github.com"
+			set tHttpRequest.Https = 1
+			set tHttpRequest.SSLConfiguration = "ISC.FeatureTracker.SSL.Config"
+
+			set tURL = "/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_"_tFilename_".csv"
+	
+			w:pVerbose !,"Downloading ",tURL," ..."
+			set tSC = tHttpRequest.Get(tURL_"?raw=true")
+			quit:$$$ISERR(tSC)
+			if tHttpRequest.HttpResponse.StatusCode'=200 {
+				w !,"HTTP error code trying to fetch archive: ",tHttpRequest.HttpResponse.StatusCode
+				continue
+			}
+			
+			set tSC = tFilePtr.LinkToFile(pTempDir_$piece(tURL,"/",*))
+			quit:$$$ISERR(tSC)
+			
+			set tSC = tFilePtr.CopyFromAndSave(tHttpRequest.HttpResponse.Data)
+			quit:$$$ISERR(tSC)
+			
+			w:pVerbose " (",$normalize(tFilePtr.FileBinarySize()/1024/1024,2),"MB)"
+			
+		}
+		quit:$$$ISERR(tSC)
+
+		w:pVerbose !
+		set:pLoad tSC = ..LoadData(pTempDir, pVerbose)
+		quit:$$$ISERR(tSC)
+		w:pVerbose !
+		
+	} catch (ex) {
+		set tSC = ex.AsStatus()
+	}
+	quit tSC
+}
+
 /// Based on CSSE data from https://github.com/CSSEGISandData/COVID-19
 ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\", pVerbose As %Boolean = 1) As %Status
 {
@@ -8,6 +63,8 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 	try {
 		set tSeparator = $s($$$isWINDOWS:"\", 1:"/")
 		set:$e(pDir,*)'=tSeparator pDir = pDir_tSeparator
+
+		w:pVerbose !,"Loading data from ",pDir
 		
 		set tStatement = ##class(%SQL.Statement).%New()
 		set tFile = ##class(%Stream.FileCharacter).%New()
@@ -19,7 +76,7 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 			// process global file first
 			set tSC = tFile.LinkToFile(pDir_"time_series_covid19_"_tGroup_"_global.csv")
 			quit:$$$ISERR(tSC)
-			write:pVerbose !,"Processing file: '"_tFile.Filename
+			write:pVerbose !,"Processing file: '"_tFile.Filename_"'"
 			
 			set tHeader = tFile.ReadLine(), tColCount = $l(tHeader,",")
 			
@@ -50,7 +107,7 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 			continue:tGroup="recovered"
 			set tSC = tFile.LinkToFile(pDir_"time_series_covid19_"_tGroup_"_US.csv")
 			quit:$$$ISERR(tSC)
-			write:pVerbose !,"Processing file: '"_tFile.Filename
+			write:pVerbose !,"Processing file: '"_tFile.Filename_"'"
 
 			set tHeader = tFile.ReadLine(), tColCount = $l(tHeader,",")
 			
@@ -79,7 +136,7 @@ ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_cov
 		write:pVerbose !,"Updating country info"
 		do ##class(COVID.Countries).Load()
 		write:pVerbose !
-		
+
 	} catch (ex) {
 		set tSC = ex.AsStatus()
 	}

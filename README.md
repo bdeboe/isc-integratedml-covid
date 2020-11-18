@@ -17,17 +17,13 @@ Or, using [ZPM](https://github.com/intersystems-community/zpm)
 
 ## Loading the data
 
-1. Download the latest version of dataset by cloning the CSSE dataset using the following OS shell command:
-   ```Shell
-   git clone https://github.com/CSSEGISandData/COVID-19.git
-   ``` 
-   Just use `git pull` to retrieve the latest version if you already cloned the repository before
+To load the COVID-19 data from the [CSSE repository](https://github.com/CSSEGISandData/COVID-19) that also serves as the data source to the famous [COVID-19 dashboard hosted by John Hopkins University](https://coronavirus.jhu.edu/map.html), all you need is a simple call to the `Download()` method:
 
-2. Now import the data into IRIS:
-   ```ObjctScript
-   do ##class(COVID.Utils).LoadData("/path/to/CSSEGISandData/COVID-19/csse_covid_19_data/csse_covid_19_time_series/")
-   ```
-   This will amend any data already loaded, so to pick up an updated source file, just re-run the `LoadData()` method.
+  ```ObjectScript
+  do ##class(COVID.Utils).Download()
+  ```
+
+Calling this method repetitively will pull the latest version of the source files and amend what's already in your database.
 
 ## Exploring the data
 
