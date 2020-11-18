@@ -45,6 +45,6 @@ jobs:
       - name: Load CSSE data
         id: load-data
         run: |
-          echo "do ##class(COVID.Utils).LoadData("/source/data/csse_covid_19_data/csse_covid_19_time_series/")" > load-data
+          echo "do ##class(COVID.Utils).LoadData(\"/source/data/csse_covid_19_data/csse_covid_19_time_series/\")\ndo $system.SQL.Shell()\nSELECT COUNT(*) FROM COVID.DailyData\nSELECT COUNT(*) FROM COVID.DailyDataCountry\n" > load-data
           docker exec --interactive $instance iris session $instance -B < load-data
           
