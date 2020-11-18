@@ -57,7 +57,8 @@ ClassMethod Download(pTempDir As %String = "/tmp/covid19/", pLoad As %Boolean = 
 }
 
 /// Based on CSSE data from https://github.com/CSSEGISandData/COVID-19
-ClassMethod LoadData(pDir As %String = "C:\Users\bdeboe\GitHub\COVID-19\csse_covid_19_data\csse_covid_19_time_series\", pVerbose As %Boolean = 1) As %Status
+/// See <Method>Download</Method> for a one-stop-shop way of populating your database
+ClassMethod LoadData(pDir As %String = "/path/to/COVID-19/csse_covid_19_data/csse_covid_19_time_series/", pVerbose As %Boolean = 1) As %Status
 {
 	set tSC = $$$OK
 	try {

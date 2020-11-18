@@ -9,7 +9,8 @@ Import this repository's code from an IRIS shell in your namespace of choice:
   ```ObjectScript
   do $system.OBJ.LoadDir("/path/to/this-repo/src/","c",,1)
   ```
-Or, using [ZPM](https://github.com/intersystems-community/zpm)
+
+Or, using [ZPM](https://github.com/intersystems-community/zpm), which will also load the data (see below)
    
   ```ObjectScript
   zpm "load /path/to/this-repo/"
@@ -23,7 +24,9 @@ To load the COVID-19 data from the [CSSE repository](https://github.com/CSSEGISa
   do ##class(COVID.Utils).Download()
   ```
 
-Calling this method repetitively will pull the latest version of the source files and amend what's already in your database.
+Calling this method repetitively will pull the latest version of the source files and amend what's already in your database. 
+
+When installing this module using ZPM, the `Download()` method is called as part of the configure step. To refresh the data, you can either `zpm load` the module again, or call `Download()` manually using the command above.
 
 ## Exploring the data
 
